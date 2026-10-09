@@ -2,6 +2,8 @@
 
 A modern Applicant Tracking System for recruiters and hiring teams, built in seven user-approved phases.
 
+Private repository: [PranavP2207/apttrac](https://github.com/PranavP2207/apttrac).
+
 ## Current status
 
 **Phase 2: setup, database, authentication, layout, and design system.**
@@ -22,6 +24,16 @@ Editing workflows and remaining ATS modules arrive in the next phases. The user 
 ## Quick start (Windows PowerShell)
 
 Use Node.js 22.12+ or Node.js 24 LTS. Verified here with Node.js 24.19.0 and npm 11.17.0.
+
+To get a fresh checkout, authenticate GitHub CLI and clone the private repository:
+
+```powershell
+gh auth login
+gh repo clone PranavP2207/apttrac
+cd apttrac
+```
+
+Then run the setup commands below. In the existing workspace, start directly with these commands:
 
 ```powershell
 npm.cmd install

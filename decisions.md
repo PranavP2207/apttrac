@@ -56,6 +56,16 @@ Last updated: 2026-10-09
 
 ## Decision history
 
+### D-008: Official GitHub CLI for delivery
+
+- Date: 2026-10-09
+- Status: accepted
+- Source: Explicit user request to install GitHub CLI for repository creation and Git pushes.
+- Decision: Install official GitHub CLI 2.102.0 via Windows WinGet/MSI and use its authenticated HTTPS workflow under PranavP2207.
+- Reason: The connector could not create repositories, and browser creation required a separate sign-in. The user preferred CLI-based delivery.
+- Alternatives: Browser creation plus connector uploads; replaced by the requested CLI workflow.
+- Consequences: Private repository is PranavP2207/apttrac; local main tracks origin/main. Exclude credentials, local databases, uploads and generated artifacts from every push. CLI authentication is machine-local and is never stored in the repository.
+
 ### D-007: AptTraC branding and private GitHub delivery
 
 - Date: 2026-10-09

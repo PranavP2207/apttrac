@@ -21,6 +21,7 @@ Last updated: 2026-10-09
 - Login/logout, guest guards, recruiter/manager scope, revoked/disabled accounts, keyboard search, sidebar collapse, persistent themes and mobile navigation are verified locally.
 - Production login/desktop/dark screenshots and mobile job-list screenshots were visually inspected. Repeatable artifacts are in `test-results/` and `playwright-report/`; see `docs/phase-2-verification.md`.
 - Deployment: Not requested or performed.
+- AptTraC rename and GitHub delivery are complete. Private repository: https://github.com/PranavP2207/apttrac. Initial source commit b846260 was pushed and its full SHA matched GitHub's main branch.
 
 ## Structure and environment
 
@@ -29,11 +30,12 @@ Last updated: 2026-10-09
 - Setup: `npm.cmd install`, `npm.cmd run setup`, `npm.cmd run dev`. See README for synthetic account details; no secrets are stored in context.
 - Tests use isolated `prisma/e2e.db`, port 3100 and `.next-e2e`; development DB is `prisma/dev.db`.
 - Local production preview runs at `http://localhost:3000` (bound to 127.0.0.1). It is a running tool-managed process, not an installed background service; restart with `npm.cmd run start -- --hostname 127.0.0.1` after a build if needed.
+- GitHub CLI 2.102.0 is installed at `C:/Program Files/GitHub CLI/gh.exe`, on the installed Windows PATH, and authenticated as PranavP2207. Git uses HTTPS; local main tracks origin/main at the private repository above.
 
 ## Remaining work
 
-- Current authorized task: publish AptTraC to a new private GitHub repository under PranavP2207. GitHub CLI 2.102.0 is installed through official WinGet/MSI; CLI sign-in is pending. Local Git is initialized on main, with source staged and private/generated data excluded.
 - Renamed-app verification on 2026-10-09: build, lint, TypeScript and formatting pass; 9 browser flows pass in 51.1 seconds; production smoke passes. Local preview now displays AptTraC. Fresh setup uses AptTraC demo defaults; existing local accounts and .env values are preserved.
+- Publishing inspection passed for 89 source files: actual local authentication secret, .env, databases, uploads and generated artifacts were excluded. Only synthetic example/test credentials are part of the source.
 
 - No Phase 2 implementation remains pending. PostgreSQL schema validation passed without a live PostgreSQL connection; no production deployment was requested.
 - Phase 3 onward remains planned: job/candidate editing, complete filters/pagination/bulk actions, candidate profiles, pipeline/resumes, interviews/feedback/notes/email, careers/reports, editable settings and notification actions.
@@ -41,10 +43,10 @@ Last updated: 2026-10-09
 
 ## Next actions
 
-1. Finish CLI installation/authentication and renamed-app checks; inspect staged source, commit and create/push the private apttrac repository.
-2. Record the verified repository URL and Git state, then wait for the user's `continue` before Phase 3.
-3. Begin Phase 3 with job/candidate editing and browser acceptance cases written before implementation. Reuse current permission checks/schema invariants and keep I-002 visible.
+1. Wait for the user's `continue` before Phase 3.
+2. Begin Phase 3 with job/candidate editing and browser acceptance cases written before implementation. Reuse current permission checks/schema invariants and keep I-002 visible.
+3. Maintain GitHub's private visibility, excluded local data and all four context files as implementation continues.
 
 ## Latest checkpoint
 
-- 2026-10-09: Phase 2 complete. Schema validation, seed/idempotency, TypeScript, lint, build, nine E2E flows and production smoke pass. User-approved D-006 resolves I-001; SQLite startup and sidebar defects are resolved (I-003/I-004). Development-tool advisories remain open (I-002).
+- 2026-10-09: Phase 2 complete and renamed to AptTraC. Official GitHub CLI installed/authenticated; verified source published to the private repository. Build, lint, TypeScript, formatting, nine E2E flows and production smoke pass after renaming. Development-tool advisories remain open (I-002); Phase 3 awaits continuation.

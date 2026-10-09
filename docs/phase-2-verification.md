@@ -62,4 +62,6 @@ Live PostgreSQL execution, deployment, and the remaining ATS workflows have not 
 
 The user selected AptTraC and private GitHub delivery after the Phase 2 handoff. UI, metadata, package name, documentation, fresh-seed defaults, test accounts and browser storage keys were renamed. Existing local accounts and .env values were preserved.
 
-Reran lint, TypeScript, formatting, production build, all nine browser flows (51.1 seconds, no failures/skips/flaky tests), and production smoke successfully. Production preview runs the renamed build. Git excludes local credentials, databases, uploads and generated reports. Repository publication requires the newly installed GitHub CLI to finish authentication.
+Reran lint, TypeScript, formatting, production build, all nine browser flows (51.1 seconds, no failures/skips/flaky tests), and production smoke successfully. Production preview runs the renamed build. Git excludes local credentials, databases, uploads and generated reports.
+
+Installed official GitHub CLI 2.102.0 via WinGet/MSI and authenticated through its browser flow as PranavP2207. Created https://github.com/PranavP2207/apttrac with private visibility and pushed the 89-file source snapshot. GitHub's initial main SHA matched local b84626089bd2411d8132627ed393ec5cd1c6adc3. Local main tracks origin/main. The staging inspection checked excluded paths, actual local authentication-secret leakage, token patterns and private keys before committing.
