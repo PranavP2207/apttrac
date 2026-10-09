@@ -1,0 +1,571 @@
+// Target Prisma ORM 6.x (>= 6.2): SQLite supports enums and JSON in this range.
+// PostgreSQL migration: change the provider and URL, then create new migrations.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  RECRUITER
+  HIRING_MANAGER
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERN
+}
+
+enum JobStatus {
+  DRAFT
+  OPEN
+  ON_HOLD
+  CLOSED
+}
+
+enum SalaryPeriod {
+  YEAR
+  MONTH
+  HOUR
+}
+
+// A stage's editable name is separate from its stable reporting meaning.
+enum StageKind {
+  APPLIED
+  SCREENING
+  INTERVIEW
+  ASSESSMENT
+  OFFER
+  HIRED
+  REJECTED
+  CUSTOM
+}
+
+enum CandidateSource {
+  MANUAL
+  CAREERS
+  LINKEDIN
+  REFERRAL
+  JOB_BOARD
+  AGENCY
+  OTHER
+}
+
+enum InterviewMode {
+  ONLINE
+  ONSITE
+}
+
+enum InterviewStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+enum AttachmentKind {
+  RESUME
+  NOTE
+}
+
+enum ParseStatus {
+  NOT_REQUESTED
+  PENDING
+  PARSED
+  FAILED
+}
+
+enum EmailTemplateType {
+  ACKNOWLEDGEMENT
+  INTERVIEW_INVITE
+  REJECTION
+  OFFER
+  CUSTOM
+}
+
+enum EmailStatus {
+  SIMULATED
+  PENDING
+  SENT
+  FAILED
+}
+
+enum NotificationType {
+  NEW_APPLICANT
+  INTERVIEW_REMINDER
+  MENTION
+  SYSTEM
+}
+
+// Single-company installation: settings services always use id = "singleton".
+model Company {
+  id                 String                  @id @default("singleton")
+  name               String
+  website            String?
+  logoUrl            String?
+  contactEmail       String?
+  careersHeadline    String?
+  careersDescription String?
+  timezone           String                  @default("UTC")
+  currency           String                  @default("USD")
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  defaultStages      PipelineStageTemplate[]
+}
+
+// NextAuth credentials verify this table directly; sessions use JWT cookies.
+model User {
+  id                  String                    @id @default(cuid())
+  name                String
+  email               String                    @unique
+  passwordHash        String
+  role                Role                      @default(RECRUITER)
+  image               String?
+  isActive            Boolean                   @default(true)
+  sessionVersion      Int                       @default(0)
+  lastLoginAt         DateTime?
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+  createdJobs         Job[]                     @relation("JobCreator")
+  jobMemberships      JobMember[]
+  createdCandidates   Candidate[]               @relation("CandidateCreator")
+  createdApplications Application[]             @relation("ApplicationCreator")
+  stageChanges        ApplicationStageHistory[]
+  assignedInterviews  Interview[]               @relation("Interviewer")
+  createdInterviews   Interview[]               @relation("InterviewCreator")
+  scorecards          Scorecard[]
+  notes               Note[]
+  mentions            NoteMention[]
+  uploadedFiles       Attachment[]              @relation("FileUploader")
+  sentEmails          EmailLog[]                @relation("EmailSender")
+  activities          Activity[]
+  notifications       Notification[]
+
+  @@index([role, isActive])
+}
+
+model Job {
+  id                  String        @id @default(cuid())
+  slug                String        @unique
+  title               String
+  department          String
+  location            String
+  type                JobType       @default(FULL_TIME)
+  // Salary amounts use whole units of salaryCurrency, never floating point.
+  salaryMin           Int?
+  salaryMax           Int?
+  salaryCurrency      String        @default("USD")
+  salaryPeriod        SalaryPeriod  @default(YEAR)
+  description         String
+  requirements        String
+  // Validated as a non-duplicated string array by the job form/service.
+  matchKeywords       Json          @default("[]")
+  requirementsVersion Int           @default(1)
+  pipelineVersion     Int           @default(0)
+  status              JobStatus     @default(DRAFT)
+  publishedAt         DateTime?
+  closedAt            DateTime?
+  archivedAt          DateTime?
+  createdById         String
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  createdBy           User          @relation("JobCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  members             JobMember[]
+  stages              Stage[]
+  applications        Application[]
+  activities          Activity[]
+
+  @@index([status, archivedAt, createdAt])
+  @@index([department, location])
+  @@index([createdById])
+}
+
+// Hiring Managers see only jobs to which they have been assigned.
+model JobMember {
+  jobId     String
+  userId    String
+  createdAt DateTime @default(now())
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([jobId, userId])
+  @@index([userId])
+}
+
+// Settings defaults are copied when creating a job, not linked to live boards.
+model PipelineStageTemplate {
+  id        String    @id @default(cuid())
+  companyId String    @default("singleton")
+  name      String
+  kind      StageKind @default(CUSTOM)
+  position  Int
+  color     String    @default("#6366f1")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  company   Company   @relation(fields: [companyId], references: [id], onDelete: Restrict)
+
+  @@unique([companyId, name])
+  @@index([companyId, position])
+}
+
+model Stage {
+  id           String                    @id @default(cuid())
+  jobId        String
+  name         String
+  kind         StageKind                 @default(CUSTOM)
+  position     Int
+  color        String                    @default("#6366f1")
+  archivedAt   DateTime?
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+  job          Job                       @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  applications Application[]             @relation("CurrentApplicationStage")
+  departures   ApplicationStageHistory[] @relation("StageDeparture")
+  arrivals     ApplicationStageHistory[] @relation("StageArrival")
+
+  // The composite reference prevents an application using another job's stage.
+  @@unique([id, jobId])
+  @@unique([jobId, name])
+  @@index([jobId, archivedAt, position])
+}
+
+model Candidate {
+  id            String          @id @default(cuid())
+  name          String
+  // All writes normalize email with trim().toLowerCase() before validation.
+  email         String          @unique
+  phone         String?
+  linkedinUrl   String?
+  source        CandidateSource @default(MANUAL)
+  sourceDetails String?
+  summary       String?
+  // Null means unrated. Zod enforces integer ratings from 1 to 5.
+  rating        Int?
+  resumeId      String?         @unique
+  createdById   String?
+  archivedAt    DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  resume        Attachment?     @relation("PrimaryResume", fields: [resumeId], references: [id], onDelete: SetNull)
+  createdBy     User?           @relation("CandidateCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  files         Attachment[]    @relation("CandidateFiles")
+  applications  Application[]
+  tags          CandidateTag[]
+  notes         Note[]
+  emailLogs     EmailLog[]
+  activities    Activity[]
+
+  @@index([archivedAt, createdAt])
+  @@index([source, rating])
+  @@index([createdById])
+}
+
+model Application {
+  id                String                    @id @default(cuid())
+  candidateId       String
+  jobId             String
+  stageId           String
+  // The application preserves its own resume and acquisition source.
+  resumeId          String?
+  source            CandidateSource           @default(MANUAL)
+  sourceDetails     String?
+  coverLetter       String?
+  position          Int                       @default(0)
+  // Optimistic concurrency: moves update only the expected version.
+  version           Int                       @default(0)
+  appliedAt         DateTime                  @default(now())
+  stageEnteredAt    DateTime                  @default(now())
+  hiredAt           DateTime?
+  rejectedAt        DateTime?
+  matchScore        Int?
+  // Evidence includes required/matched/missing keywords and algorithm version.
+  matchDetails      Json?
+  matchCalculatedAt DateTime?
+  matchJobVersion   Int?
+  matchResumeId     String?
+  createdById       String?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+  candidate         Candidate                 @relation(fields: [candidateId], references: [id], onDelete: Restrict)
+  job               Job                       @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  stage             Stage                     @relation("CurrentApplicationStage", fields: [stageId, jobId], references: [id, jobId], onDelete: Restrict)
+  resume            Attachment?               @relation("ApplicationResume", fields: [resumeId], references: [id], onDelete: SetNull)
+  matchedResume     Attachment?               @relation("MatchedResume", fields: [matchResumeId], references: [id], onDelete: SetNull)
+  createdBy         User?                     @relation("ApplicationCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  stageHistory      ApplicationStageHistory[]
+  interviews        Interview[]
+  notes             Note[]
+  emailLogs         EmailLog[]
+  activities        Activity[]
+  notifications     Notification[]
+
+  @@unique([candidateId, jobId])
+  // Candidate-scoped notes use this key to enforce application ownership.
+  @@unique([id, candidateId])
+  @@index([jobId, stageId, position])
+  @@index([source, appliedAt])
+  @@index([hiredAt])
+  @@index([resumeId])
+  @@index([matchResumeId])
+  @@index([createdById])
+}
+
+// Every move (including initial Applied) gets a row in the same transaction.
+// Name/kind snapshots retain meaning after a stage is renamed or retired.
+model ApplicationStageHistory {
+  id                 String      @id @default(cuid())
+  applicationId      String
+  applicationVersion Int
+  fromStageId        String?
+  toStageId          String?
+  fromStageName      String?
+  toStageName        String
+  fromStageKind      StageKind?
+  toStageKind        StageKind
+  previousEnteredAt  DateTime?
+  changedAt          DateTime    @default(now())
+  actorId            String?
+  reason             String?
+  application        Application @relation(fields: [applicationId], references: [id], onDelete: Restrict)
+  fromStage          Stage?      @relation("StageDeparture", fields: [fromStageId], references: [id], onDelete: SetNull)
+  toStage            Stage?      @relation("StageArrival", fields: [toStageId], references: [id], onDelete: SetNull)
+  actor              User?       @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@unique([applicationId, applicationVersion])
+  @@index([applicationId, changedAt])
+  @@index([toStageKind, changedAt])
+  @@index([fromStageId])
+  @@index([toStageId])
+  @@index([actorId])
+}
+
+model Interview {
+  id            String          @id @default(cuid())
+  applicationId String
+  title         String          @default("Interview")
+  interviewerId String
+  createdById   String
+  startsAt      DateTime
+  endsAt        DateTime
+  timezone      String          @default("UTC")
+  mode          InterviewMode   @default(ONLINE)
+  meetingUrl    String?
+  location      String?
+  status        InterviewStatus @default(SCHEDULED)
+  completedAt   DateTime?
+  cancelledAt   DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  application   Application     @relation(fields: [applicationId], references: [id], onDelete: Restrict)
+  interviewer   User            @relation("Interviewer", fields: [interviewerId], references: [id], onDelete: Restrict)
+  createdBy     User            @relation("InterviewCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  scorecards    Scorecard[]
+  notifications Notification[]
+
+  @@index([status, startsAt])
+  @@index([interviewerId, startsAt, endsAt])
+  @@index([applicationId])
+  @@index([createdById])
+}
+
+model Scorecard {
+  id                  String    @id @default(cuid())
+  interviewId         String
+  authorId            String
+  // All three ratings are validated integers in the inclusive range 1..5.
+  technicalRating     Int
+  communicationRating Int
+  cultureFitRating    Int
+  comments            String?
+  submittedAt         DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  interview           Interview @relation(fields: [interviewId], references: [id], onDelete: Restrict)
+  author              User      @relation(fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@unique([interviewId, authorId])
+  @@index([authorId])
+}
+
+model Note {
+  id            String         @id @default(cuid())
+  candidateId   String
+  applicationId String?
+  authorId      String
+  body          String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  candidate     Candidate      @relation(fields: [candidateId], references: [id], onDelete: Restrict)
+  // Optional application context must belong to this same candidate.
+  application   Application?   @relation(fields: [applicationId, candidateId], references: [id, candidateId], onDelete: Restrict)
+  author        User           @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  mentions      NoteMention[]
+  attachments   Attachment[]
+  notifications Notification[]
+
+  @@index([candidateId, createdAt])
+  @@index([applicationId, candidateId])
+  @@index([authorId])
+}
+
+model NoteMention {
+  noteId    String
+  userId    String
+  createdAt DateTime @default(now())
+  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([noteId, userId])
+  @@index([userId])
+}
+
+// Files live outside public/. Downloads and parsing use the storage adapter.
+model Attachment {
+  id                 String         @id @default(cuid())
+  candidateId        String
+  noteId             String?
+  uploadedById       String?
+  kind               AttachmentKind
+  storageKey         String         @unique
+  originalName       String
+  mimeType           String
+  sizeBytes          Int
+  sha256             String?
+  parseStatus        ParseStatus    @default(NOT_REQUESTED)
+  extractedText      String?
+  parseError         String?
+  parsedAt           DateTime?
+  createdAt          DateTime       @default(now())
+  candidate          Candidate      @relation("CandidateFiles", fields: [candidateId], references: [id], onDelete: Restrict)
+  note               Note?          @relation(fields: [noteId], references: [id], onDelete: Restrict)
+  uploadedBy         User?          @relation("FileUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+  primaryResumeFor   Candidate?     @relation("PrimaryResume")
+  applicationResumes Application[]  @relation("ApplicationResume")
+  matchResumes       Application[]  @relation("MatchedResume")
+
+  @@index([candidateId, kind, createdAt])
+  @@index([noteId])
+  @@index([uploadedById])
+}
+
+model Tag {
+  id         String         @id @default(cuid())
+  name       String         @unique
+  color      String         @default("#6366f1")
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  candidates CandidateTag[]
+}
+
+model CandidateTag {
+  candidateId String
+  tagId       String
+  createdAt   DateTime  @default(now())
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  tag         Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([candidateId, tagId])
+  @@index([tagId])
+}
+
+model EmailTemplate {
+  id        String            @id @default(cuid())
+  name      String            @unique
+  type      EmailTemplateType
+  subject   String
+  body      String
+  isActive  Boolean           @default(true)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  logs      EmailLog[]
+
+  @@index([type, isActive])
+}
+
+// Keep rendered snapshots so template edits never rewrite the email history.
+model EmailLog {
+  id                String         @id @default(cuid())
+  templateId        String?
+  candidateId       String?
+  applicationId     String?
+  sentById          String?
+  toEmail           String
+  subject           String
+  body              String
+  status            EmailStatus    @default(SIMULATED)
+  provider          String         @default("simulation")
+  providerMessageId String?
+  idempotencyKey    String?        @unique
+  error             String?
+  sentAt            DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  template          EmailTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  candidate         Candidate?     @relation(fields: [candidateId], references: [id], onDelete: SetNull)
+  application       Application?   @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  sentBy            User?          @relation("EmailSender", fields: [sentById], references: [id], onDelete: SetNull)
+
+  @@index([candidateId, createdAt])
+  @@index([applicationId, createdAt])
+  @@index([status, createdAt])
+  @@index([templateId])
+  @@index([sentById])
+}
+
+// Services append activities inside the domain transaction; no edit endpoint.
+// entityType/entityId plus snapshots preserve audit context if links are removed.
+model Activity {
+  id            String       @id @default(cuid())
+  actorId       String?
+  actorLabel    String?
+  candidateId   String?
+  jobId         String?
+  applicationId String?
+  action        String
+  entityType    String
+  entityId      String
+  description   String
+  metadata      Json?
+  createdAt     DateTime     @default(now())
+  actor         User?        @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  candidate     Candidate?   @relation(fields: [candidateId], references: [id], onDelete: SetNull)
+  job           Job?         @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  application   Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([candidateId, createdAt])
+  @@index([jobId, createdAt])
+  @@index([applicationId, createdAt])
+  @@index([entityType, entityId, createdAt])
+  @@index([actorId])
+}
+
+model Notification {
+  id            String           @id @default(cuid())
+  userId        String
+  applicationId String?
+  interviewId   String?
+  noteId        String?
+  type          NotificationType
+  title         String
+  message       String
+  href          String?
+  dedupeKey     String?          @unique
+  // Scheduled reminders become visible only when deliverAt <= the current time.
+  deliverAt     DateTime         @default(now())
+  readAt        DateTime?
+  createdAt     DateTime         @default(now())
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  application   Application?     @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  interview     Interview?       @relation(fields: [interviewId], references: [id], onDelete: SetNull)
+  note          Note?            @relation(fields: [noteId], references: [id], onDelete: SetNull)
+
+  @@index([userId, readAt, deliverAt])
+  @@index([applicationId])
+  @@index([interviewId])
+  @@index([noteId])
+}

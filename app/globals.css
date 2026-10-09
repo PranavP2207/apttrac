@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 25% 97%;
+    --foreground: 222 35% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 35% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 35% 15%;
+    --primary: 243 75% 59%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 225 25% 95%;
+    --secondary-foreground: 222 30% 25%;
+    --muted: 220 20% 95%;
+    --muted-foreground: 220 13% 45%;
+    --accent: 240 65% 96%;
+    --accent-foreground: 243 65% 48%;
+    --destructive: 350 75% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 20% 91%;
+    --input: 220 20% 86%;
+    --ring: 243 75% 59%;
+    --radius: 0.875rem;
+    --font-sans:
+      "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont;
+  }
+  .dark {
+    --background: 225 25% 9%;
+    --foreground: 220 22% 94%;
+    --card: 225 23% 12%;
+    --card-foreground: 220 22% 94%;
+    --popover: 225 23% 12%;
+    --popover-foreground: 220 22% 94%;
+    --primary: 241 85% 70%;
+    --primary-foreground: 225 30% 9%;
+    --secondary: 224 23% 18%;
+    --secondary-foreground: 220 22% 94%;
+    --muted: 224 23% 16%;
+    --muted-foreground: 220 15% 65%;
+    --accent: 242 30% 22%;
+    --accent-foreground: 241 85% 82%;
+    --destructive: 350 75% 59%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 224 20% 21%;
+    --input: 224 20% 28%;
+    --ring: 241 85% 70%;
+  }
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+  ::selection {
+    background: hsl(var(--primary) / 0.18);
+  }
+}
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
