@@ -1,6 +1,6 @@
 # Decisions: AptTraC
 
-Last updated: 2026-10-09
+Last updated: 2026-10-13
 
 ## Active decisions
 
@@ -55,6 +55,16 @@ Last updated: 2026-10-09
 - Consequences: Store generated file keys, metadata, and parse results. Application resumes preserve job-specific documents. Email logs retain rendered content and explicit simulated status. Interview reminders use scheduled database notifications displayed when due.
 
 ## Decision history
+
+### D-009: Phase 3 write and list contracts
+
+- Date: 2026-10-13
+- Status: accepted
+- Source: Implementation choices within the authorized jobs/candidates phase, following D-003 through D-005.
+- Decision: Shared Zod schemas and thin JSON Route Handlers call transactional feature services. Cookie-authenticated writes require the exact configured NEXTAUTH_URL origin. Job/profile edits and lifecycle actions compare the supplied updatedAt revision; bulk tagging advances that revision too.
+- Reason: Keep business rules readable, reject cross-site writes, and prevent silent overwrites. Manager reads scope each related application, note, email and scorecard independently, including CSV exports.
+- Alternatives: Browser-only validation or unversioned writes would not protect data integrity. Global candidate visibility alone would expose unrelated application history.
+- Consequences: Use the configured app URL in the browser. Refresh after a stale-edit conflict. Lists show ten records per page with URL filters; selection stays on the current page, up to 100 IDs per API action. Dates filter candidate creation using inclusive UTC days. CSV exports neutralize formula prefixes and fail above 10,000 rows so recruiters can narrow their filters. Phase 3 bulk tagging/export are implemented; stage moves/rejection remain Phase 4.
 
 ### D-008: Official GitHub CLI for delivery
 

@@ -1,6 +1,6 @@
 # Known issues: AptTraC
 
-Last updated: 2026-10-09
+Last updated: 2026-10-13
 
 ## Active issues
 
@@ -17,6 +17,16 @@ Last updated: 2026-10-09
 - Next action: Recheck patched packages during Phase 7 and verify any build-tool migration with UI/build checks.
 
 ## Resolved issues
+
+### I-005: Phase 3 navigation, React keys and browser icon
+
+- Status: resolved locally on 2026-10-13.
+- Impact: Medium for form navigation; low for duplicate-key warnings and missing browser icon.
+- Evidence: First candidate E2E saved with HTTP 201 but stayed on the form; the focused create/edit/archive flow passed after removing the immediate refresh after navigation. Mobile console checks then reproduced two duplicate-key warnings because filter and table siblings both used the serialized query as their key. Production console checks identified `/favicon.ico` returning 404.
+- Expected: Successful saves open the saved profile, list components have distinct keys, and the browser loads an app icon without an error.
+- Resolution: Navigate once after saving/duplicating; refresh only actions that stay on the current page. Prefix filter/table keys separately. Add the AptTraC SVG icon using Next.js icon metadata. Final 17-flow browser suite and final production smoke pass, including mobile console assertions and no runtime errors.
+- Cause: Duplicate-key and missing-icon causes are confirmed. The overlapping navigation/refresh was the suspected race; the focused workflow passed after its removal.
+- Next action: Preserve mobile console checks and one navigation/refresh path per action.
 
 ### I-001: Next.js 14 support and critical advisories
 

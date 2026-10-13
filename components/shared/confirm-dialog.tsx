@@ -20,7 +20,7 @@ export function ConfirmDialog({
       <Alert.Trigger asChild>{children}</Alert.Trigger>
       <Alert.Portal>
         <Alert.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" />
-        <Alert.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl border bg-card p-6 shadow-xl">
+        <Alert.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100%_-_2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl border bg-card p-6 shadow-xl">
           <Alert.Title className="text-lg font-semibold">{title}</Alert.Title>
           <Alert.Description className="mt-2 text-sm leading-relaxed text-muted-foreground">
             {description}

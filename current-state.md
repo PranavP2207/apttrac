@@ -1,52 +1,58 @@
 # Current state: AptTraC
 
-Last updated: 2026-10-09
+Last updated: 2026-10-13
 
 ## Project and scope
 
-- Goal: Build a complete Applicant Tracking System named AptTraC using the user's specified stack and seven delivery phases.
-- Current stage: Phase 2 complete; paused at the requested phase boundary. Wait for `continue` before implementing Phase 3.
+- Goal: Complete a polished Applicant Tracking System using the user's stack and seven delivery phases.
+- Current stage: Phase 3 complete and verified locally. Final source publication is in progress; stop before Phase 4 until the user says `continue`.
 - App root: `C:/Users/prana/Documents/ChatGPT/ATS`.
-- Scope and acceptance criteria: See [instructions.md](instructions.md).
+- Requirements and phase gates: [instructions.md](instructions.md); architecture/schema: [docs/architecture.md](docs/architecture.md).
 
 ## Implemented and verified
 
-- Next.js 15.5.27 app, pinned dependencies, environment setup, Prisma client and committed SQLite migration are installed. The user explicitly approved Next.js 15 (D-006).
-- Complete Prisma schema: 20 models and 13 enums; SQLite and PostgreSQL-provider schema validation passed.
-- Synthetic seed ran: 6 users, 5 jobs, 30 profiles, 36 applications, 12 interviews, 4 scorecards, 8 notes and 4 templates. Rerunning seed preserves existing records/passwords.
-- Credentials authentication, logout auditing, active-user/session-version checks, role permissions, and scoped database queries are implemented.
-- Responsive workspace shell, global keyboard search, light/dark themes, shared Radix/shadcn UI primitives, and read-only overview/jobs/candidates/interviews/activity/company/team screens are implemented.
-- Production dependency audit: zero findings. Full audit: 9 development-tool findings (7 high, 2 moderate), documented in I-002.
-- Final TypeScript check, lint and production build pass. All 9 Playwright flows pass (no failures/skips/flaky tests); production browser smoke also passes.
-- Login/logout, guest guards, recruiter/manager scope, revoked/disabled accounts, keyboard search, sidebar collapse, persistent themes and mobile navigation are verified locally.
-- Production login/desktop/dark screenshots and mobile job-list screenshots were visually inspected. Repeatable artifacts are in `test-results/` and `playwright-report/`; see `docs/phase-2-verification.md`.
-- Deployment: Not requested or performed.
-- AptTraC rename and GitHub delivery are complete. Private repository: https://github.com/PranavP2207/apttrac. Initial source commit b846260 was pushed and its full SHA matched GitHub's main branch.
+- Phase 1: complete architecture, feature folders and portable Prisma schema (20 models, 13 enums).
+- Phase 2: pinned Next.js 15.5.27, React 18, TypeScript, Tailwind/shadcn-style Radix UI, Prisma 6.19.3/SQLite, NextAuth credentials login/logout, three roles, active-user/session-version checks, scoped queries and synthetic seed.
+- Seed: 6 users, 5 jobs, 30 profiles, 36 applications, 12 interviews, 4 scorecards, 8 notes, 4 templates. Idempotent reruns preserve existing data/passwords.
+- Responsive shell, collapsible sidebar/mobile navigation, keyboard global search, themes, profile menu, empty/loading/error states and confirmation/toast primitives.
+- Phase 3 jobs: validated create/edit, assignments, matching keywords, copied company stages, independent Draft duplication, close, reversible archive/restore, status/type/text filters, sort and pagination.
+- Phase 3 candidates: normalized unique email, contact/source/summary, tags/ratings, create/edit, reversible archive/restore, optional initial application and additional applications to open jobs, each with Applied history and audit in one transaction.
+- Profiles combine scoped applications, activity, stage history, existing interviews/scorecards, notes and email logs. Managers cannot edit global records or view another job's private content on a shared candidate.
+- Candidate filters: name/email, job, stage, source, tag, exact rating, inclusive UTC creation dates and archive status. Job/stage match the same application. Ten records per page, stable sorting, bounded selection, atomic bulk tags and filtered/selected CSV with formula-prefix protection.
+- JSON writes use shared Zod validation, role/origin checks, stale updatedAt rejection and transactional audit. Bulk tags advance the profile revision to protect older edit forms.
+- Read-only foundations remain for overview, interviews, activity and Admin company/team settings. Later-phase mutation workflows are not implemented.
 
-## Structure and environment
+## Validation evidence
 
-- Stack: Next.js 15.5.27 App Router, React 18, TypeScript, Tailwind 3, Radix/shadcn components, lucide-react, Prisma 6.19.3, SQLite, NextAuth 4.24.15, Zod, React Hook Form, dnd-kit, Recharts.
-- Full source tree: `app/`, `components/`, `features/`, `lib/`, `prisma/`, `types/`; verification in `e2e/`, `scripts/`, `docs/`.
-- Setup: `npm.cmd install`, `npm.cmd run setup`, `npm.cmd run dev`. See README for synthetic account details; no secrets are stored in context.
-- Tests use isolated `prisma/e2e.db`, port 3100 and `.next-e2e`; development DB is `prisma/dev.db`.
-- Local production preview runs at `http://localhost:3000` (bound to 127.0.0.1). It is a running tool-managed process, not an installed background service; restart with `npm.cmd run start -- --hostname 127.0.0.1` after a build if needed.
-- GitHub CLI 2.102.0 is installed at `C:/Program Files/GitHub CLI/gh.exe`, on the installed Windows PATH, and authenticated as PranavP2207. Git uses HTTPS; local main tracks origin/main at the private repository above.
+- 2026-10-13: TypeScript, ESLint (no warnings), production build and formatting pass. Production dependency audit reports zero findings.
+- Final full Playwright suite: 17 passed in 128.5 seconds; zero failures, skips or flaky tests. Includes auth, roles, job/candidate workflows, dialogs, stale writes, validation failures, manager privacy, filters/export, bulk tags and mobile overflow/console checks.
+- Final production smoke passes after the final build: guards/login/logout, job form validation, candidate profile/timeline, light/dark/mobile layouts and no rendering/runtime console errors. No hiring records were changed by production smoke; login/logout audit is expected.
+- Desktop job form, profiles and dark/mobile screenshots were visually inspected. Evidence and initial fixes: [docs/phase-3-verification.md](docs/phase-3-verification.md), I-005.
+- Generated HTML/JSON reports and screenshots are in `playwright-report/` and `test-results/`, ignored by Git.
+- SQLite and provider-switched PostgreSQL schema validation passed in Phase 2. No schema changes in Phase 3; no live PostgreSQL migration or deployment performed.
+- Full development-tool audit findings remain open in I-002; production audit is clear.
+
+## Environment and delivery
+
+- Full source: `app/`, `components/`, `features/`, `lib/`, `prisma/`, `types/`; tests/docs in `e2e/`, `scripts/`, `docs/`.
+- Fresh setup: `npm.cmd install`, `npm.cmd run setup`, `npm.cmd run dev`; see README. Existing .env and local accounts were preserved through the AptTraC rename.
+- Local development data: ignored `prisma/dev.db`. E2E resets only `prisma/e2e.db`, runs at port 3100 and builds to `.next-e2e`.
+- Final production preview runs at `http://localhost:3000`, bound to 127.0.0.1, in a tool-managed process. Restart with `npm.cmd run start -- --hostname 127.0.0.1` after a build if needed. Use the configured NEXTAUTH_URL origin for writes.
+- Official GitHub CLI 2.102.0 is installed/authenticated as PranavP2207. Private repo: https://github.com/PranavP2207/apttrac; local main tracks origin/main over HTTPS. Phase 2 was previously published; Phase 3 is prepared for source inspection and push.
+- Keep .env, credentials, databases, uploads, build outputs and browser artifacts out of Git. Only synthetic example/test credentials belong in source.
 
 ## Remaining work
 
-- Renamed-app verification on 2026-10-09: build, lint, TypeScript and formatting pass; 9 browser flows pass in 51.1 seconds; production smoke passes. Local preview now displays AptTraC. Fresh setup uses AptTraC demo defaults; existing local accounts and .env values are preserved.
-- Publishing inspection passed for 89 source files: actual local authentication secret, .env, databases, uploads and generated artifacts were excluded. Only synthetic example/test credentials are part of the source.
-
-- No Phase 2 implementation remains pending. PostgreSQL schema validation passed without a live PostgreSQL connection; no production deployment was requested.
-- Phase 3 onward remains planned: job/candidate editing, complete filters/pagination/bulk actions, candidate profiles, pipeline/resumes, interviews/feedback/notes/email, careers/reports, editable settings and notification actions.
-- Existing overview and module screens are read-only foundations; do not describe later-phase workflows as implemented.
+- Phase 4: per-job Kanban, accessible drag/drop and bulk stage/reject actions, pipeline customization, private PDF/DOCX uploads, text parsing and explainable match scores.
+- Phase 5: interview scheduling/calendar, scorecard submission, internal notes/mentions/attachments, editable email templates and simulated sending.
+- Phase 6: public careers/application workflow, complete dashboard and reports/CSV analytics.
+- Phase 7: editable settings/users/tags/default stages, notification actions, polish and final testing; revisit I-002.
 
 ## Next actions
 
-1. Wait for the user's `continue` before Phase 3.
-2. Begin Phase 3 with job/candidate editing and browser acceptance cases written before implementation. Reuse current permission checks/schema invariants and keep I-002 visible.
-3. Maintain GitHub's private visibility, excluded local data and all four context files as implementation continues.
+1. Finish inspected Phase 3 source push and verify GitHub main matches the local commit.
+2. Wait for the user's next `continue`, then start Phase 4 with acceptance cases and context reconciliation.
 
 ## Latest checkpoint
 
-- 2026-10-09: Phase 2 complete and renamed to AptTraC. Official GitHub CLI installed/authenticated; verified source published to the private repository. Build, lint, TypeScript, formatting, nine E2E flows and production smoke pass after renaming. Development-tool advisories remain open (I-002); Phase 3 awaits continuation.
+- 2026-10-13: Phase 3 is locally complete; final E2E/build/production checks pass. Final publication is the only pending step. Phase 4 has not started.

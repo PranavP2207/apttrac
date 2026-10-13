@@ -6,7 +6,7 @@ Private repository: [PranavP2207/apttrac](https://github.com/PranavP2207/apttrac
 
 ## Current status
 
-**Phase 2: setup, database, authentication, layout, and design system.**
+**Phase 3: jobs and candidates — complete and verified locally.**
 
 Implemented:
 
@@ -16,10 +16,14 @@ Implemented:
 - Server-side active-user, session-version, role, and Hiring Manager job-scope checks.
 - Responsive collapsible sidebar, accessible mobile navigation, profile/logout menu, persistent light/dark themes, and keyboard global search (Ctrl/Cmd+K).
 - Shared shadcn/ui-style Radix source components: buttons, labeled inputs, cards, badges, dialogs, confirmation dialogs, dropdowns, avatars, skeletons, empty states, and toasts.
-- Database-backed overview and read-only jobs, candidates, interviews, activity, and administrator company/team views.
+- Database-backed overview and read-only interviews, activity, and administrator company/team views.
+- Validated job creation/editing, manager assignments, independent draft duplication, close, reversible archive and restore.
+- Candidate creation/editing, normalized unique email, tags, ratings, reversible archive and multiple job applications, each starting in Applied with immutable history.
+- Candidate profiles with scoped activity, notes, simulated email history, interviews and aggregated existing scorecards.
+- Job/candidate filters, sort and ten-row pagination; atomic bulk tagging and permission-scoped CSV exports with spreadsheet formula protection.
 - Playwright checks for seed integrity, authentication, permissions, search, themes, and mobile navigation using an isolated database.
 
-Editing workflows and remaining ATS modules arrive in the next phases. The user explicitly approved **Next.js 15** after the Next.js 14 audit showed critical advisories (D-006). No hosting/deployment has been performed.
+Pipeline moves and resume uploads arrive in Phase 4; interview, note, scorecard and email editing arrives in Phase 5. The user explicitly approved **Next.js 15** after the Next.js 14 audit showed critical advisories (D-006). No hosting/deployment has been performed.
 
 ## Quick start (Windows PowerShell)
 
@@ -83,7 +87,7 @@ Matching Prisma CLI/client versions are pinned. SQLite enum/JSON support require
 ```text
 app/          Routes, layouts, pages, route handlers, loading/errors
 components/   Reusable UI, navigation, global search, shared presentation
-features/     Auth, overview foundations, scoped job/candidate queries
+features/     Auth, overview, jobs/candidates services, validation, forms and queries
 lib/          Prisma, environment, current-user/permissions, dates, utilities
 prisma/       Full schema, committed migration, realistic seed
 types/        NextAuth extensions and shared action result types
@@ -94,11 +98,21 @@ docs/         Architecture and verification plan/evidence
 
 See [architecture](docs/architecture.md) for the complete planned route tree. Private data code imports server-only. Browser responses/selects exclude password hashes and unrelated private fields.
 
+## Using jobs and candidates
+
+- **Jobs → Create job:** write the role, compensation and requirements; assign hiring managers. Draft jobs stay out of new application choices. Open jobs accept candidates.
+- **Job profile:** edit, duplicate as a fresh draft, close, archive or restore. Closing and archiving ask for confirmation. Find archived roles using the Show filter.
+- **Candidates → Add candidate:** enter name/email, optional contact details, rating/tags and an open job. The new application starts in Applied. Existing emails are rejected with guidance to find the existing profile.
+- **Candidate profile → Add application:** attach an existing person to another open job. Each job has one application per candidate; profile edits preserve their history.
+- **Candidate list:** search, expand More filters, sort, page through results, select people to add a tag, or export the filtered/selected CSV. Date filters use inclusive UTC days. Stage/job filters match the same application. Archives preserve history and can be restored.
+
 ## Permissions
 
 - Admin: all hiring data and company/team settings.
 - Recruiter: all hiring data; no administrator user/company area.
 - Hiring Manager: assigned jobs and their candidate applications/interviews/notes/activity.
+- Admin and Recruiter can edit jobs/candidates. Hiring Managers have read-only access to assigned jobs/profiles; shared profiles omit other jobs' private history and feedback.
+- Custom JSON writes validate Zod input, require the configured app origin, and audit changes transactionally. Edits reject stale updatedAt revisions with HTTP 409; refresh before trying again.
 - Guests receive login redirects on private pages and 401 on private APIs. Insufficient API roles receive 403; restricted administrator pages show an access-restricted view.
 - Every protected data boundary checks the current DB user, active flag, role and session version. Middleware is an early redirect.
 - Disabling/resetting a user's access should increment sessionVersion to invalidate old cookies. User-management actions arrive in Phase 7.
@@ -143,9 +157,11 @@ npx.cmd playwright install chromium
 
 Tests start their own server on 127.0.0.1:3100, use prisma/e2e.db, and build into .next-e2e. They reset only the isolated test database, preserving the development database.
 
-Artifacts: playwright-report/index.html, test-results/results.json, desktop/mobile screenshots and failure traces/screenshots. Generated artifacts are ignored by Git. See [Phase 2 verification](docs/phase-2-verification.md) for actual evidence.
+Artifacts: playwright-report/index.html, test-results/results.json, desktop/mobile screenshots and failure traces/screenshots. Generated artifacts are ignored by Git. See [Phase 2 verification](docs/phase-2-verification.md) and [Phase 3 verification](docs/phase-3-verification.md) for actual evidence.
 
 Verified on 2026-10-09: TypeScript, lint, production build, nine browser E2E flows, seed idempotency, SQLite/PostgreSQL schema validation, and local production smoke all pass. Source formatting is available through `npm.cmd run format` and `npm.cmd run format:check`.
+
+Verified on 2026-10-13: Phase 3 TypeScript/lint/build pass, all 17 browser flows pass (no failures, skips or flaky tests), and the final production smoke passes with no rendering/runtime console errors. Jobs, candidate creation/editing/archives, applications, filters, pagination, bulk tags, CSV safety and manager scope are covered. Development data is preserved; mutation tests use only the isolated test database.
 
 Production build/start locally:
 
@@ -158,13 +174,13 @@ With that server running, use `npm.cmd run test:production` in another terminal.
 
 ## Dependency audit
 
-After the approved update and supporting fixes, npm audit --omit=dev reported **zero production findings** on 2026-10-09. The full audit retains development-tool findings, primarily the Tailwind 3 glob/parser chain. See [known issues](known-issues.md); future audit results may change.
+After the approved update and supporting fixes, npm audit --omit=dev reported **zero production findings**, rechecked on 2026-10-13. The full audit from 2026-10-09 retains development-tool findings, primarily the Tailwind 3 glob/parser chain. See [known issues](known-issues.md); future audit results may change.
 
 ## Delivery phases
 
 1. Plan: architecture, folders, full schema — complete.
 2. Setup: packages, database/seed, authentication, layout, design system — complete and verified locally.
-3. Jobs and candidates editing workflows.
+3. Jobs and candidates editing workflows — complete and verified locally.
 4. Pipeline and resume parsing.
 5. Interviews, scorecards, notes, email templates.
 6. Public careers, complete dashboard, reports.
