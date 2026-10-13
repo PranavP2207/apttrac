@@ -1,15 +1,15 @@
 import { defineConfig, devices } from "@playwright/test";
 import { existsSync } from "node:fs";
-import { testEnvironment } from "./e2e/environment";
+import { testEnvironment } from "./tests/e2e/environment";
 Object.assign(process.env, testEnvironment);
 
 export default defineConfig({
-  testDir: "./e2e",
+  testDir: "./tests/e2e",
   fullyParallel: false,
   workers: 1,
   timeout: 60_000,
   expect: { timeout: 15_000 },
-  globalSetup: "./e2e/global-setup.ts",
+  globalSetup: "./tests/e2e/global-setup.ts",
   reporter: [
     ["list"],
     ["html", { open: "never" }],

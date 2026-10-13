@@ -6,7 +6,8 @@ Last updated: 2026-10-13
 
 - Goal: Complete a polished Applicant Tracking System using the user's stack and seven delivery phases.
 - Current stage: Phase 3 complete, verified locally and published to the private repository. Stop before Phase 4 until the user says `continue`.
-- App root: `C:/Users/prana/Documents/ChatGPT/ATS`.
+- App root: repository root.
+- Repository maintenance: organization and presentation cleanup complete and verified locally; see [cleanup evidence](docs/verification/repository-cleanup.md). The Phase 4 gate remains intact.
 - Requirements and phase gates: [instructions.md](instructions.md); architecture/schema: [docs/architecture.md](docs/architecture.md).
 
 ## Implemented and verified
@@ -25,21 +26,23 @@ Last updated: 2026-10-13
 ## Validation evidence
 
 - 2026-10-13: TypeScript, ESLint (no warnings), production build and formatting pass. Production dependency audit reports zero findings.
-- Final full Playwright suite: 17 passed in 128.5 seconds; zero failures, skips or flaky tests. Includes auth, roles, job/candidate workflows, dialogs, stale writes, validation failures, manager privacy, filters/export, bulk tags and mobile overflow/console checks.
+- Latest full Playwright suite after repository cleanup: 17 passed in 106.6 seconds; zero failures, skips or flaky tests. Includes auth, roles, job/candidate workflows, dialogs, stale writes, validation failures, manager privacy, filters/export, bulk tags and mobile overflow/console checks.
 - Final production smoke passes after the final build: guards/login/logout, job form validation, candidate profile/timeline, light/dark/mobile layouts and no rendering/runtime console errors. No hiring records were changed by production smoke; login/logout audit is expected.
-- Desktop job form, profiles and dark/mobile screenshots were visually inspected. Evidence and initial fixes: [docs/phase-3-verification.md](docs/phase-3-verification.md), I-005.
+- Desktop job form, profiles and dark/mobile screenshots were visually inspected. Evidence and initial fixes: [docs/verification/phase-3.md](docs/verification/phase-3.md), I-005.
 - Generated HTML/JSON reports and screenshots are in `playwright-report/` and `test-results/`, ignored by Git.
-- SQLite and provider-switched PostgreSQL schema validation passed in Phase 2. No schema changes in Phase 3; no live PostgreSQL migration or deployment performed.
+- SQLite schema validation passed in Phase 2. Provider-switched PostgreSQL validation passed again after moving its helper during cleanup. No schema changes; no live PostgreSQL migration or deployment performed.
+- Repository cleanup: all 44 local documentation links and three Node script paths resolve; six moved test/helper files retain their original contents. Published-history inspection covered four commits and 146 unique blobs, finding no private/generated paths, local authentication secret or checked credential patterns. Cleanup staging was inspected again before publication.
 - Full development-tool audit findings remain open in I-002; production audit is clear.
 
 ## Environment and delivery
 
-- Full source: `app/`, `components/`, `features/`, `lib/`, `prisma/`, `types/`; tests/docs in `e2e/`, `scripts/`, `docs/`.
-- Fresh setup: `npm.cmd install`, `npm.cmd run setup`, `npm.cmd run dev`; see README. Existing .env and local accounts were preserved through the AptTraC rename.
+- Full source: `app/`, `components/`, `features/`, `lib/`, `prisma/`, `types/`; browser tests in `tests/e2e/`, verification helpers in `scripts/verification/`, guides and evidence in `docs/`.
+- Fresh setup: `npm.cmd ci`, `npm.cmd run setup`, `npm.cmd run dev`; see README. Existing .env and local accounts were preserved through the AptTraC rename.
 - Local development data: ignored `prisma/dev.db`. E2E resets only `prisma/e2e.db`, runs at port 3100 and builds to `.next-e2e`.
 - Final production preview runs at `http://localhost:3000`, bound to 127.0.0.1, in a tool-managed process. Restart with `npm.cmd run start -- --hostname 127.0.0.1` after a build if needed. Use the configured NEXTAUTH_URL origin for writes.
 - Official GitHub CLI 2.102.0 is installed/authenticated as PranavP2207. Private repo: https://github.com/PranavP2207/apttrac; local main tracks origin/main over HTTPS. Phase 3 source commit `4a03d9afc71cb6ef2a8f0127977498a58fe948e4` was pushed, and its full SHA matched GitHub main. The staged 52-file publication inspection excluded the local authentication secret, credentials, generated outputs and hiring data.
 - Keep .env, credentials, databases, uploads, build outputs and browser artifacts out of Git. Only synthetic example/test credentials belong in source.
+- Repository description and seven descriptive topics are present on GitHub; private visibility was confirmed during cleanup.
 
 ## Remaining work
 
@@ -50,9 +53,9 @@ Last updated: 2026-10-13
 
 ## Next actions
 
-1. Wait for the user's next `continue`; no implementation is pending in Phase 3.
+1. Wait for the user's next `continue`; Phase 3 and repository maintenance are complete.
 2. Start Phase 4 with acceptance cases and context reconciliation. Reuse existing application/history services and preserve scoped profiles, revision checks and private data boundaries.
 
 ## Latest checkpoint
 
-- 2026-10-13: Phase 3 complete and published privately; final E2E/build/production checks pass. Source inspection passed and GitHub's source commit was verified. Phase 4 has not started.
+- 2026-10-13: Repository maintenance complete and verified. Documentation, test and helper paths are organized; unused source removed; README and contributor guidance refreshed. TypeScript/lint/format/build, all 17 browser flows, production smoke and schema portability helper pass. Phase 4 has not started.

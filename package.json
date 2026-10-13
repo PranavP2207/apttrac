@@ -17,12 +17,12 @@
     "setup": "npm run env:setup && prisma generate && prisma migrate deploy && npm run db:seed",
     "db:generate": "prisma generate",
     "db:validate": "prisma validate",
-    "db:validate:postgres": "node scripts/validate-portability.mjs",
+    "db:validate:postgres": "node scripts/verification/validate-portability.mjs",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "test:e2e": "playwright test",
-    "test:production": "node scripts/smoke-production.mjs",
+    "test:production": "node scripts/verification/smoke-production.mjs",
     "test:report": "playwright show-report"
   },
   "prisma": {

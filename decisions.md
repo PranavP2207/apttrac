@@ -56,6 +56,16 @@ Last updated: 2026-10-13
 
 ## Decision history
 
+### D-010: Repository organization and documentation
+
+- Date: 2026-10-13
+- Status: accepted
+- Source: Implementation choice within the user's repository cleanup request.
+- Decision: Keep runtime feature folders and framework configuration in place. Group browser acceptance tests under `tests/e2e/`, verification helpers under `scripts/verification/`, and phase evidence under `docs/verification/`. Use a concise product README linked to setup, architecture and contribution guidance.
+- Reason: Make the repository easier to browse without changing the app or its setup commands.
+- Alternatives: Moving all source into `src/` would add alias and configuration churn without improving the existing feature structure. Removing project context would discard required handoff information.
+- Consequences: Update configuration and documentation references together. Keep the four canonical context files at the root, generated artifacts ignored, and the delivery phase gate intact. Remove only source proven unused.
+
 ### D-009: Phase 3 write and list contracts
 
 - Date: 2026-10-13

@@ -9,6 +9,7 @@ Create a working, polished Applicant Tracking System for non-technical recruiter
 - Current product name: **AptTraC**, explicitly selected by the user on 2026-10-09 after checking the proposed Talentra name against existing recruitment brands.
 - GitHub delivery: publish verified source to the existing **private** PranavP2207/apttrac repository. Phase 3 was separately authorized by `continue` on 2026-10-13; pause again when it is complete.
 - Install the official GitHub CLI on this Windows machine and use it for repository creation and Git pushes, per the user's follow-up request.
+- Repository maintenance authorized on 2026-10-13: organize files, inspect unnecessary published content and improve GitHub presentation. Preserve app behavior; this request does not start Phase 4.
 
 ## Scope and acceptance criteria
 

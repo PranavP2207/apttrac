@@ -44,19 +44,18 @@ Tests run with an isolated database, port and browser profile. Windows sandbox r
 
 ## Repeatable artifacts
 
-- [HTML browser report](../playwright-report/index.html)
-- [Nine-test JSON result](../test-results/results.json)
-- [Production smoke result](../test-results/production-smoke.json)
-- [Production login](../test-results/production-login.png)
-- [Production desktop](../test-results/production-desktop.png)
-- [Production dark theme](../test-results/production-dark.png)
-- [Production mobile](../test-results/production-mobile.png)
+- HTML browser report: `playwright-report/index.html`.
+- Browser JSON result: `test-results/results.json`.
+- Production smoke result: `test-results/production-smoke.json`.
+- Production screenshots: `test-results/production-login.png`, `production-desktop.png`, `production-dark.png`, and `production-mobile.png`.
+
+These paths are relative to the repository root and generated locally, so they are not GitHub links. Later test runs replace the artifacts; this document preserves the historical Phase 2 results. See [Contributing](../../CONTRIBUTING.md#verification) to reproduce the checks.
 
 Production viewport screenshots are the preferred visual evidence. Full-page dev screenshots can place sticky navigation at the scroll position used by the last interaction. Visually inspected the production login/desktop/dark screens and mobile job-list screen: neutral surfaces, indigo accent, readable spacing, accessible controls, and no document overflow.
 
 Two observed setup/UI defects are resolved: missing-file SQLite startup (I-003) and sidebar overflow/development-indicator overlap (I-004). Failed login test ambiguity was corrected by giving its alert an accessible name; navigation links also have stable names independent of count badges.
 
-Live PostgreSQL execution, deployment, and the remaining ATS workflows have not been tested or implemented in this phase. See the phased scope in README and current-state.md.
+Live PostgreSQL execution, deployment, and the remaining ATS workflows have not been tested or implemented in this phase. See the phased scope in [README](../../README.md#roadmap) and [current-state.md](../../current-state.md).
 
 ## AptTraC rename verification — 2026-10-09
 

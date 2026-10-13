@@ -1,18 +1,32 @@
+# Dependencies and generated builds
 node_modules/
 .next*/
 out/
+*.tsbuildinfo
+
+# Local environment and private credentials
 .env
 .env.*
 !.env.example
-*.tsbuildinfo
-prisma/*.db
-prisma/*.db-*
+*.pem
+*.key
+
+# Local databases and private candidate uploads
+prisma/**/*.db
+prisma/**/*.db-*
 storage/uploads/
+
+# Generated verification reports and temporary files
 playwright-report/
 test-results/
 .tmp/
+
+# Machine-specific tooling and logs
 npm-debug.log*
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
 .codex/
 .agents/
-*.pem
-*.key

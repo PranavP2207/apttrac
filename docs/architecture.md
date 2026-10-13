@@ -1,7 +1,7 @@
 # AptTraC: architecture and data model
 
-Status: Phase 1 design, amended for the user-approved Next.js 15 update. Phase 2 foundation is implemented and verified locally; later-phase workflows remain planned. Schema validates for SQLite and PostgreSQL.
-Date: 2026-10-09.
+Status: Phase 1 design, amended for the user-approved Next.js 15 update and repository organization. Phases 2–3 are implemented and verified locally; Phases 4–7 remain planned. Schema validates for SQLite and PostgreSQL.
+Last updated: 2026-10-13.
 
 The product is a working hiring workspace for recruiters, with a separate public careers experience. This document records the implementation plan, rather than claiming planned features already work.
 
@@ -15,8 +15,8 @@ Recruiter workspace / Public careers page
     Server Components: initial reads
     Client Components: forms, tables, drag/drop, charts, calendar
                   |
-    Server Actions: authenticated mutations
-    Route Handlers: auth, multipart applications/uploads, downloads, search, CSV
+    JSON Route Handlers: authenticated mutations, auth, search, CSV
+    Planned Route Handlers: multipart applications/uploads, downloads
                   |
     Current-user authorization + Zod validation
                   |
@@ -28,7 +28,7 @@ Recruiter workspace / Public careers page
     (local filesystem)     (simulation, later SMTP)
 ```
 
-Routes compose small components and call feature queries/actions. Feature services own the business rules and transaction boundaries; shared `lib/` code owns infrastructure. Avoid generic repository wrappers over Prisma: direct, well-scoped queries are easier for a beginner to follow.
+Routes compose small components and call feature queries/services. Feature services own the business rules and transaction boundaries; shared `lib/` code owns infrastructure. Avoid generic repository wrappers over Prisma: direct, well-scoped queries are easier for a beginner to follow. Phase 3 uses thin JSON Route Handlers for validated writes (D-009).
 
 Shared Zod schemas validate both browser forms and server input. React Hook Form supplies inline errors. Prisma-generated types represent stored entities; explicit view models exclude password hashes, resume text, and unrelated private fields from browser responses.
 
@@ -160,19 +160,33 @@ ATS/
     migrations/
   types/
     next-auth.d.ts
-    actions.ts
   docs/
+    README.md
+    getting-started.md
     architecture.md
+    assets/
+      banner.svg
+    verification/
+      phase-2.md
+      phase-3.md
+      repository-cleanup.md
+  scripts/
+    setup.mjs
+    verification/
+      smoke-production.mjs
+      validate-portability.mjs
   public/
     brand/                           # Public brand assets; never resumes
   storage/
     uploads/                         # Generated locally; ignored by Git
-  e2e/
-    fixtures/
-    auth.spec.ts
-    hiring-workflow.spec.ts
-    careers.spec.ts
-    permissions.spec.ts
+  tests/
+    e2e/
+      environment.ts
+      global-setup.ts
+      auth.spec.ts
+      jobs-candidates.spec.ts
+      fixtures/                      # Planned browser fixtures
+      careers.spec.ts                # Planned Phase 6 coverage
   playwright.config.ts
   middleware.ts                      # Early session redirect; services enforce access
   .env.example
@@ -185,6 +199,7 @@ ATS/
   package.json
   package-lock.json
   README.md
+  CONTRIBUTING.md
   current-state.md
   decisions.md
   instructions.md
@@ -197,7 +212,6 @@ A feature uses only the files it needs. For example:
 features/jobs/
   components/job-form.tsx
   components/job-table.tsx
-  actions.ts          # Authorized Server Action entry points
   queries.ts          # Server-only, scoped read queries
   service.ts          # Mutation rules and transactions
   validation.ts       # Shared Zod schemas
