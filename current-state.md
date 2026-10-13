@@ -5,7 +5,7 @@ Last updated: 2026-10-13
 ## Project and scope
 
 - Goal: Complete a polished Applicant Tracking System using the user's stack and seven delivery phases.
-- Current stage: Phase 3 complete and verified locally. Final source publication is in progress; stop before Phase 4 until the user says `continue`.
+- Current stage: Phase 3 complete, verified locally and published to the private repository. Stop before Phase 4 until the user says `continue`.
 - App root: `C:/Users/prana/Documents/ChatGPT/ATS`.
 - Requirements and phase gates: [instructions.md](instructions.md); architecture/schema: [docs/architecture.md](docs/architecture.md).
 
@@ -38,7 +38,7 @@ Last updated: 2026-10-13
 - Fresh setup: `npm.cmd install`, `npm.cmd run setup`, `npm.cmd run dev`; see README. Existing .env and local accounts were preserved through the AptTraC rename.
 - Local development data: ignored `prisma/dev.db`. E2E resets only `prisma/e2e.db`, runs at port 3100 and builds to `.next-e2e`.
 - Final production preview runs at `http://localhost:3000`, bound to 127.0.0.1, in a tool-managed process. Restart with `npm.cmd run start -- --hostname 127.0.0.1` after a build if needed. Use the configured NEXTAUTH_URL origin for writes.
-- Official GitHub CLI 2.102.0 is installed/authenticated as PranavP2207. Private repo: https://github.com/PranavP2207/apttrac; local main tracks origin/main over HTTPS. Phase 2 was previously published; Phase 3 is prepared for source inspection and push.
+- Official GitHub CLI 2.102.0 is installed/authenticated as PranavP2207. Private repo: https://github.com/PranavP2207/apttrac; local main tracks origin/main over HTTPS. Phase 3 source commit `4a03d9afc71cb6ef2a8f0127977498a58fe948e4` was pushed, and its full SHA matched GitHub main. The staged 52-file publication inspection excluded the local authentication secret, credentials, generated outputs and hiring data.
 - Keep .env, credentials, databases, uploads, build outputs and browser artifacts out of Git. Only synthetic example/test credentials belong in source.
 
 ## Remaining work
@@ -50,9 +50,9 @@ Last updated: 2026-10-13
 
 ## Next actions
 
-1. Finish inspected Phase 3 source push and verify GitHub main matches the local commit.
-2. Wait for the user's next `continue`, then start Phase 4 with acceptance cases and context reconciliation.
+1. Wait for the user's next `continue`; no implementation is pending in Phase 3.
+2. Start Phase 4 with acceptance cases and context reconciliation. Reuse existing application/history services and preserve scoped profiles, revision checks and private data boundaries.
 
 ## Latest checkpoint
 
-- 2026-10-13: Phase 3 is locally complete; final E2E/build/production checks pass. Final publication is the only pending step. Phase 4 has not started.
+- 2026-10-13: Phase 3 complete and published privately; final E2E/build/production checks pass. Source inspection passed and GitHub's source commit was verified. Phase 4 has not started.
